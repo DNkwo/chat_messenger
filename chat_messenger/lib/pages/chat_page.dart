@@ -1,3 +1,4 @@
+import 'package:chat_messenger/components/chat_bubble.dart';
 import 'package:chat_messenger/components/my_text_field.dart';
 import 'package:chat_messenger/services/chat/chat_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -35,6 +36,7 @@ class _ChatPageState extends State<ChatPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.receiverUserEmail),
+        backgroundColor: Colors.grey[700],
       ),
       body: Column(
         children: [
@@ -79,18 +81,31 @@ class _ChatPageState extends State<ChatPage> {
 
     //align the messages tgo the right and if the sender is the cufrrent user, otherwise
     //to the left
-    var alignment = (data['senderId'] == _firebaseAuth.currentUser!.uid)
-        ? Alignment.centerRight
-        : Alignment.centerLeft;
+
+    var isOwnUser = (data['senderId'] == _firebaseAuth.currentUser!.uid);
+
+    var alignment = isOwnUser ? Alignment.centerRight : Alignment.centerLeft;
+
+    var crossAxisAlignment =
+        isOwnUser ? CrossAxisAlignment.end : CrossAxisAlignment.start;
+
+    var mainAxisAlignment =
+        isOwnUser ? MainAxisAlignment.end : MainAxisAlignment.start;
 
     return Container(
       alignment: alignment,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
+          crossAxisAlignment: crossAxisAlignment,
+          mainAxisAlignment: mainAxisAlignment,
           children: [
             Text(data['senderEmail']),
-            Text(data['message']),
+            const SizedBox(height: 5.0),
+            ChatBubble(
+              message: data['message'],
+              isOwnUser: isOwnUser,
+            ),
           ],
         ),
       ),
@@ -103,16 +118,19 @@ class _ChatPageState extends State<ChatPage> {
       children: [
         //text field
         Expanded(
-          child: MyTextField(
-            controller: _messageController,
-            hintText: 'Enter Message',
-            obscureText: false,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: MyTextField(
+              controller: _messageController,
+              hintText: 'Enter Message',
+              obscureText: false,
+            ),
           ),
         ),
         //send button
         IconButton(
           onPressed: sendMessage,
-          icon: Icon(Icons.arrow_upward, size: 40),
+          icon: const Icon(Icons.arrow_upward, size: 40),
         ),
       ],
     );
